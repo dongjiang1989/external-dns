@@ -325,10 +325,10 @@ func listAllCustomHostnames(iter autoPager[custom_hostnames.CustomHostnameListRe
 }
 
 // deduplicateCustomHostnames keeps each custom hostname on a single DNSName,
-// since Cloudflare maps a custom hostname to one origin. All record types of
-// the winning DNSName keep it (dual-stack). The current Cloudflare origin wins
-// if it is still a claimant, so a new resource cannot take it over; otherwise
-// the shortest DNSName wins (the aggregate over per-pod records).
+// since Cloudflare maps a custom hostname to one origin.
+// All record types of the winning DNSName keep it (dual-stack).
+// The current Cloudflare origin wins if it is still a claimant, so a new resource cannot
+// take it over; otherwise the shortest DNSName wins (the aggregate over per-pod records).
 func (p *CloudFlareProvider) deduplicateCustomHostnames(endpoints []*endpoint.Endpoint) {
 	merged := customHostnamesMap{}
 	for _, chs := range p.cachedCustomHostnames {
