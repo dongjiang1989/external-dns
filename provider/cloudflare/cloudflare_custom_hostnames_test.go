@@ -809,8 +809,6 @@ func TestSubmitCustomHostnameChanges(t *testing.T) {
 	})
 }
 
-// customHostnameOrigin returns the origin of a custom hostname in the mock
-// client's store, or ("", false) if not found.
 func customHostnameOrigin(client *mockCloudFlareClient, hostname string) (string, bool) {
 	for _, ch := range client.customHostnames["001"] {
 		if ch.hostname == hostname {
@@ -839,7 +837,6 @@ func reconcileCustomHostnames(t *testing.T, p *CloudFlareProvider, desired []*en
 	return changes
 }
 
-// epWithCH builds an endpoint carrying the given custom hostname value.
 func epWithCH(dnsName, recordType, ch string) *endpoint.Endpoint {
 	return &endpoint.Endpoint{
 		DNSName:    dnsName,
@@ -851,7 +848,6 @@ func epWithCH(dnsName, recordType, ch string) *endpoint.Endpoint {
 	}
 }
 
-// hasEndpointCH reports whether an endpoint carries the given custom hostname value.
 func hasEndpointCH(ep *endpoint.Endpoint, ch string) bool {
 	return slices.Contains(getEndpointCustomHostnames(ep), ch)
 }
@@ -977,8 +973,6 @@ func TestDeduplicateCustomHostnamesReconcile(t *testing.T) {
 		}
 	}
 
-	// Fix #1: A and AAAA share a DNSName, so the name-based tie-break must
-	// not strip one of them.
 	for _, order := range []string{"A-first", "AAAA-first"} {
 		t.Run("dual-stack A+AAAA keeps custom hostname, "+order, func(t *testing.T) {
 			client := NewMockCloudFlareClient()
@@ -1004,8 +998,6 @@ func TestDeduplicateCustomHostnamesReconcile(t *testing.T) {
 		})
 	}
 
-	// Fix #2: existing owner keeps custom hostname when a shorter-named
-	// resource claims it.
 	t.Run("existing owner keeps custom hostname when shorter-named resource claims it", func(t *testing.T) {
 		client := NewMockCloudFlareClient()
 		p := &CloudFlareProvider{Client: client, CustomHostnamesConfig: CustomHostnamesConfig{Enabled: true}}
@@ -1029,12 +1021,7 @@ func TestDeduplicateCustomHostnamesReconcile(t *testing.T) {
 	})
 }
 
-// TestCustomHostnameFanOutSteadyState verifies that after the first reconcile,
-// subsequent loops converge: the aggregate keeps the custom hostname, per-pod
-// records never cause a duplicate CreateCustomHostname, and the plan reports
-// no changes. This catches the regression where dedup ran only on the change
-// set (so on loop 2+ the unchanged aggregate was missing and a per-pod record
-// was wrongly chosen as winner, re-triggering #6698).
+// From loop 2 on, the aggregate is absent from the change set; dedup must still pick it.
 func TestCustomHostnameFanOutSteadyState(t *testing.T) {
 	client := NewMockCloudFlareClient()
 	p := &CloudFlareProvider{Client: client, CustomHostnamesConfig: CustomHostnamesConfig{Enabled: true}}
